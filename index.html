@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>材料化学刷题</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,system-ui,sans-serif;background:#f5f0ff;color:#333;min-height:100vh}
+.header{background:linear-gradient(135deg,#7c5cbf,#5b8def);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header h1{font-size:18px;font-weight:600}
+.header .sub{font-size:13px;opacity:.85;margin-top:4px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:#fff;border-bottom:1px solid #e8e0f0}
+.nav button{padding:6px 14px;border-radius:20px;border:1.5px solid #c4b5d9;background:#fff;color:#6b5b8a;font-size:13px;cursor:pointer;transition:.2s}
+.nav button.active{background:#7c5cbf;color:#fff;border-color:#7c5cbf}
+.mode-bar{display:flex;gap:8px;padding:10px 16px;background:#faf8ff}
+.mode-bar button{flex:1;padding:8px;border-radius:12px;border:1.5px solid #d4c8e8;background:#fff;font-size:13px;cursor:pointer;transition:.2s}
+.mode-bar button.active{background:#ede5fa;border-color:#7c5cbf;color:#7c5cbf;font-weight:600}
+.progress{padding:8px 16px;background:#faf8ff}
+.progress-bar{height:6px;background:#e8e0f0;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#7c5cbf,#5b8def);transition:width .3s;border-radius:3px}
+.progress-text{font-size:12px;color:#8a7da0;margin-top:4px;text-align:right}
+.card{margin:12px 16px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(124,92,191,.1)}
+.q-tag{display:inline-block;background:#ede5fa;color:#7c5cbf;font-size:11px;padding:3px 10px;border-radius:10px;margin-bottom:10px;font-weight:600}
+.q-text{font-size:15px;line-height:1.7;margin-bottom:16px;font-weight:500}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{padding:12px 16px;border:1.5px solid #e0d6f0;border-radius:12px;font-size:14px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:10px;line-height:1.5}
+.opt:active{transform:scale(.98)}
+.opt .letter{width:26px;height:26px;border-radius:50%;background:#f0ebfa;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#7c5cbf;flex-shrink:0}
+.opt.correct{background:#e8f5e9;border-color:#66bb6a}
+.opt.correct .letter{background:#66bb6a;color:#fff}
+.opt.wrong{background:#ffeef0;border-color:#ef5350}
+.opt.wrong .letter{background:#ef5350;color:#fff}
+.opt.disabled{pointer-events:none}
+.tf-opts{display:flex;gap:12px}
+.tf-btn{flex:1;padding:14px;border-radius:12px;border:1.5px solid #e0d6f0;font-size:16px;cursor:pointer;text-align:center;transition:.2s}
+.tf-btn:active{transform:scale(.98)}
+.tf-btn.correct{background:#e8f5e9;border-color:#66bb6a;color:#2e7d32}
+.tf-btn.wrong{background:#ffeef0;border-color:#ef5350;color:#c62828}
+.tf-btn.disabled{pointer-events:none}
+.reveal-btn{width:100%;padding:14px;background:linear-gradient(135deg,#7c5cbf,#5b8def);color:#fff;border:none;border-radius:12px;font-size:15px;cursor:pointer;transition:.2s;font-weight:500}
+.reveal-btn:active{transform:scale(.98)}
+.answer-box{margin-top:14px;padding:14px;background:#f0faf0;border-radius:12px;border:1px solid #c8e6c9;font-size:14px;line-height:1.7;display:none}
+.answer-box.show{display:block}
+.self-grade{display:none;gap:10px;margin-top:12px}
+.self-grade.show{display:flex}
+.self-grade button{flex:1;padding:10px;border-radius:10px;border:none;font-size:14px;cursor:pointer}
+.self-grade .yes{background:#e8f5e9;color:#2e7d32}
+.self-grade .no{background:#ffeef0;color:#c62828}
+.nav-btns{display:flex;gap:10px;padding:12px 16px 24px}
+.nav-btns button{flex:1;padding:12px;border-radius:12px;border:none;font-size:14px;cursor:pointer;font-weight:500}
+.nav-btns .prev{background:#e8e0f0;color:#6b5b8a}
+.nav-btns .next{background:linear-gradient(135deg,#7c5cbf,#5b8def);color:#fff}
+.nav-btns button:disabled{opacity:.4;pointer-events:none}
+.score-card{text-align:center;padding:30px 20px}
+.score-num{font-size:48px;font-weight:700;color:#7c5cbf}
+.score-label{font-size:14px;color:#8a7da0;margin-top:4px}
+.score-msg{font-size:16px;margin-top:16px;color:#333;line-height:1.6}
+.restart-btn{margin-top:20px;padding:12px 32px;background:linear-gradient(135deg,#7c5cbf,#5b8def);color:#fff;border:none;border-radius:12px;font-size:15px;cursor:pointer}
+.wrong-list{margin-top:20px;text-align:left}
+.wrong-item{padding:12px;background:#ffeef0;border-radius:10px;margin-bottom:8px;font-size:13px;line-height:1.6}
+.wrong-item .wi-q{font-weight:600;color:#333}
+.wrong-item .wi-a{color:#2e7d32;margin-top:4px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>📚 材料化学刷题</h1>
+<div class="sub" id="chapterTitle">选择章节开始</div>
+</div>
+
+<div class="nav" id="chapterNav"></div>
+<div class="mode-bar" id="modeBar">
+<button class="active" onclick="setMode('all')">全部</button>
+<button onclick="setMode('choice')">选择题</button>
+<button onclick="setMode('tf')">判断题</button>
+<button onclick="setMode('fill')">填空题</button>
+<button onclick="setMode('essay')">简答题</button>
+</div>
+
+<div class="progress" id="progressArea">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-text" id="progressText"></div>
+</div>
+
+<div id="quizArea"></div>
+
+<div class="nav-btns" id="navBtns">
+<button class="prev" id="prevBtn" onclick="go(-1)">上一题</button>
+<button class="next" id="nextBtn" onclick="go(1)">下一题</button>
+</div>
+
+<script>
+const DATA = {
+"材料化学基础": {
+  choice: [
+    {q:"下列关于金属键的描述，错误的是", o:["金属键无方向性和饱和性","金属键由金属阳离子与自由电子相互作用形成","金属键决定了金属良好的导电性和延展性","金属键是典型的共价键"], a:3},
+    {q:"铁碳合金中，属于间隙固溶体的是", o:["渗碳体","奥氏体","莱氏体","珠光体"], a:1},
+    {q:"下列金属材料中，不属于有色金属的是", o:["铝合金","铜合金","不锈钢","钛合金"], a:2},
+    {q:"钢的淬火处理主要目的是获得（  ）组织，提高硬度和耐磨性", o:["铁素体","珠光体","马氏体","渗碳体"], a:2},
+    {q:"下列不属于传统无机非金属材料的是", o:["陶瓷","玻璃","水泥","光导纤维"], a:3},
+    {q:"普通玻璃的主要成分不包括", o:["硅酸钠","硅酸钙","二氧化硅","碳酸钙"], a:3},
+    {q:"陶瓷材料的主要制备工艺不包含", o:["配料","成型","烧结","轧制"], a:3},
+    {q:"下列关于水泥的说法，正确的是", o:["水泥的主要原料是纯碱、石灰石和石英","水泥具有水硬性，在水中和空气中都能硬化","水泥的主要成分是二氧化硅","水泥属于有机高分子材料"], a:1},
+    {q:"下列新型无机非金属材料中，属于生物陶瓷的是", o:["氧化铝陶瓷","氮化硅陶瓷","羟基磷灰石陶瓷","碳化硅陶瓷"], a:2},
+    {q:"金属材料发生腐蚀的本质是", o:["物理磨损","氧化还原反应","热胀冷缩","晶格畸变"], a:1},
+    {q:"下列能有效防止钢铁腐蚀的方法是", o:["保持表面潮湿","制成不锈钢","增加碳含量","暴露在酸性环境中"], a:1},
+    {q:"光导纤维的主要成分是", o:["Si","SiO₂","SiC","Na₂SiO₃"], a:1},
+    {q:"下列关于合金的说法，错误的是", o:["合金的熔点一般低于其成分金属","合金的硬度一般高于其成分金属","合金是纯净物","合金具有良好的机械性能"], a:2},
+    {q:"陶瓷材料的性能特点不包括", o:["高硬度","耐高温","韧性好","耐腐蚀"], a:2},
+    {q:"下列物质中，属于金属化合物的是", o:["黄铜","青铜","Fe₃C","碳钢"], a:2},
+    {q:"下列金属中，地壳中含量最高的是", o:["铁","铝","钙","银"], a:1},
+    {q:"世界年产量最高的金属是", o:["铜","金","铁","铝"], a:2},
+    {q:"导电导热性能最优异的金属是", o:["银","铜","铝","铁"], a:0},
+    {q:"熔点最低，常温下为液态的金属是", o:["汞","钨","金","锂"], a:0},
+    {q:"人体中含量最高的金属元素是", o:["钠","钙","钾","镁"], a:1},
+    {q:"密度最小的金属是", o:["铝","镁","锂","钠"], a:2},
+    {q:"下列关于镁合金的说法，错误的是", o:["密度小，是轻量化常用合金","耐腐蚀性强，无需防护处理","强度较高，常用于航空、汽车零部件","塑性较好，易加工成型"], a:1},
+    {q:"铝合金被广泛应用于门窗、航空航天领域，主要利用的核心性能是", o:["硬度极高，耐磨性强","密度小、强度高、耐腐蚀","导电性极佳，导热性差","熔点高，耐高温性能优异"], a:1},
+    {q:"钛合金被称为「太空金属」，下列不属于其优势性能的是", o:["生物相容性好，可用于人造骨骼","耐腐蚀，尤其耐海水腐蚀","密度大，承重能力极强","强度高，耐高温低温"], a:2},
+    {q:"黄铜、青铜等铜合金，下列说法正确的是", o:["纯铜硬度比铜合金大","铜合金导电性、导热性优于纯铜","青铜是人类最早使用的合金之一","铜合金易生锈，无实用价值"], a:2},
+    {q:"储氢合金的核心作用是", o:["直接燃烧氢气提供能量","可逆吸收和释放氢气，实现氢气储存","制造氢气，无需外部气源","提高氢气的燃烧温度"], a:1},
+    {q:"形状记忆合金的应用，与其特性无关的是", o:["牙齿矫正丝","航天器天线","自动控温阀门","普通建筑钢筋"], a:3},
+    {q:"超耐热合金的关键特性是", o:["低温下强度极高","高温下抗氧化、抗蠕变，强度稳定","密度极小，轻量化效果好","导电性极强，适合导电部件"], a:1},
+    {q:"超低温合金最适合使用的场景是", o:["夏季户外空调外机","火箭低温燃料储罐","日常厨房炊具","普通汽车发动机"], a:1}
+  ],
+  tf: [
+    {q:"金属的导电性是由于自由电子的定向移动形成的。", a:true},
+    {q:"所有无机非金属材料都具有脆性大的特点。", a:false},
+    {q:"珠光体是铁素体和渗碳体的机械混合物。", a:true},
+    {q:"水泥的硬化过程是物理变化，不涉及化学反应。", a:false},
+    {q:"合金中一定含有两种或两种以上的金属元素。", a:false},
+    {q:"陶瓷的烧结温度越高，其致密度和强度越高。", a:false},
+    {q:"金属的钝化可以提高其耐腐蚀性。", a:true},
+    {q:"光导纤维利用了二氧化硅的光学特性，可传输光信号。", a:true},
+    {q:"不锈钢之所以耐腐蚀，是因为其含碳量极低。", a:false},
+    {q:"无机非金属材料的化学键主要为离子键和共价键。", a:true},
+    {q:"钨是熔点最高的金属，常用于制作灯丝。", a:true},
+    {q:"金的展性最好，可以打成极薄的金箔。", a:true},
+    {q:"铬是硬度最大的金属，常用来镀在其他金属表面防锈。", a:true},
+    {q:"铁是人体中含量最高的金属元素。", a:false},
+    {q:"铝是目前世界年产量最高的金属。", a:false},
+    {q:"锂是密度最小的金属。", a:true},
+    {q:"奥氏体是碳在γ-Fe中的间隙固溶体。", a:true},
+    {q:"铁素体是碳在α-Fe中的固溶体。", a:true},
+    {q:"渗碳体是铁和碳组成比为3：1的化合物。", a:true}
+  ],
+  fill: [
+    {q:"金属材料分为____和有色金属两大类，其中____是应用最广泛的黑色金属材料。", a:"黑色金属；钢铁"},
+    {q:"合金的晶体结构主要分为____和____两种基本类型。", a:"固溶体；金属化合物"},
+    {q:"铁碳合金中，含碳量小于0.0218%的称为____，含碳量在0.0218%~2.11%之间的称为____。", a:"工业纯铁；钢"},
+    {q:"无机非金属材料按组成和结构可分为____和____两大类。", a:"传统无机非金属材料；新型无机非金属材料"},
+    {q:"传统硅酸盐材料主要包括____、____和____。", a:"陶瓷；玻璃；水泥"},
+    {q:"玻璃是一种____固体，具有____的特点。", a:"非晶态；各向同性"},
+    {q:"金属腐蚀分为____腐蚀和____腐蚀，其中____腐蚀危害更大。", a:"化学；电化学；电化学"},
+    {q:"新型无机非金属材料中的高温结构陶瓷主要有____等，具有耐高温、高强度的特点。", a:"氮化硅陶瓷；碳化硅陶瓷"},
+    {q:"钢的热处理工艺主要有淬火、____、____和退火等。", a:"回火；正火"},
+    {q:"地壳中含量最高的金属元素是____。", a:"铝"},
+    {q:"目前世界年产量最高的金属是____。", a:"铁"},
+    {q:"人体中含量最高的金属元素是____。", a:"钙"},
+    {q:"导电、导热性最好的金属是____。", a:"银"},
+    {q:"熔点最高的金属是____。", a:"钨"},
+    {q:"延性最好的金属是____。", a:"铂"},
+    {q:"密度最大的金属是____。", a:"锇"},
+    {q:"硬度最大的金属是____。", a:"铬"},
+    {q:"熔点最低的金属是____。", a:"汞"},
+    {q:"展性最好的金属是____。", a:"金"},
+    {q:"密度最小的金属是____。", a:"锂"},
+    {q:"硬度最小的金属是____。", a:"铯"}
+  ],
+  essay: [
+    {q:"简述金属材料的主要性能特点及应用领域。", a:"性能特点：良好的导电性、导热性、延展性、金属光泽，较高的强度和韧性。\n应用领域：建筑、机械制造、交通运输、电子电器、航空航天等。"},
+    {q:"什么是合金？合金相比纯金属有哪些优良性能？", a:"合金是由两种或两种以上的金属（或金属与非金属）熔合而成的具有金属特性的物质。\n优良性能：熔点更低、硬度更高、耐腐蚀性更好、机械性能更优异。"},
+    {q:"分析金属发生电化学腐蚀的条件，并列举两种防止金属腐蚀的方法。", a:"条件：金属表面存在电解质溶液、形成原电池（有活泼性不同的电极）。\n防护方法：涂覆保护层（油漆、电镀）、制成合金（不锈钢）、牺牲阳极法等。"},
+    {q:"为什么钨适合用来制作灯泡的灯丝？", a:"因为钨的熔点极高，灯泡发光时温度很高，钨不易熔化，能保证灯丝长时间使用。"}
+  ]
+},
+"高分子材料": {
+  choice: [
+    {q:"高分子化合物的相对分子质量一般在（  ）以上", o:["100","1000","10000","100000"], a:2},
+    {q:"下列属于加聚反应的是", o:["苯酚与甲醛合成酚醛树脂","乙二醇与对苯二甲酸合成涤纶","氯乙烯合成聚氯乙烯","己二胺与己二酸合成尼龙-66"], a:2},
+    {q:"高分子链中能够独立运动的最小单元称为", o:["单体","链节","链段","重复单元"], a:2},
+    {q:"下列高分子材料中，热塑性塑料是", o:["环氧树脂","聚乙烯","酚醛塑料","硫化橡胶"], a:1},
+    {q:"结晶度越高，高分子材料的性能变化正确的是", o:["强度提高、韧性下降","强度下降、韧性提高","耐热性下降","透明性提高"], a:0},
+    {q:"橡胶具有高弹性的主要原因是", o:["分子链刚性大","分子链柔顺、交联形成网状结构","结晶度高","相对分子质量小"], a:1},
+    {q:"下列属于天然高分子的是", o:["聚乙烯","淀粉","聚苯乙烯","有机玻璃"], a:1},
+    {q:"高分子材料玻璃化转变温度Tg以下，非晶高分子呈现", o:["高弹态","玻璃态","粘流态","熔融态"], a:1},
+    {q:"尼龙-66的单体是", o:["己内酰胺","己二胺+己二酸","丙烯腈","苯乙烯"], a:1},
+    {q:"高分子材料老化的主要原因不包括", o:["光氧氧化","热降解","交联","分子链柔顺性提高"], a:3}
+  ],
+  tf: [
+    {q:"高分子化合物都具有确定的相对分子质量。", a:false},
+    {q:"加聚反应无小分子副产物生成，缩聚反应有小分子脱出。", a:true},
+    {q:"分子链越柔顺，高分子玻璃化转变温度Tg越高。", a:false},
+    {q:"结晶高分子一般比非晶高分子强度、硬度更高。", a:true},
+    {q:"硫化橡胶属于热塑性高分子，可以反复熔融加工。", a:false},
+    {q:"尼龙、涤纶属于合成纤维，是缩聚产物。", a:true},
+    {q:"高分子材料老化只发生氧化反应，与光、热无关。", a:false},
+    {q:"支链越多，聚乙烯结晶度越低，密度越小。", a:true},
+    {q:"高弹态是橡胶使用的最佳状态。", a:true},
+    {q:"淀粉、纤维素、蛋白质均为天然高分子。", a:true}
+  ],
+  fill: [
+    {q:"高分子按来源分为____、____和半合成高分子。", a:"天然高分子；合成高分子"},
+    {q:"高分子链的结构分为____结构和____结构。", a:"一级；二级"},
+    {q:"高分子聚集态结构主要有晶态、____、取向态、____和织态结构。", a:"非晶态；液晶态"},
+    {q:"聚合反应按机理分为____聚合和____聚合。", a:"连锁；逐步"},
+    {q:"聚乙烯、聚丙烯属于____高分子；蛋白质、纤维素属于____高分子。", a:"碳链；杂链"},
+    {q:"热固性高分子成型后____反复加热熔融加工。", a:"不能"},
+    {q:"高分子的三态：玻璃态、____、粘流态。", a:"高弹态"},
+    {q:"橡胶通过____处理形成交联网络，获得高弹性。", a:"硫化（交联）"},
+    {q:"聚氯乙烯英文缩写____，聚苯乙烯英文缩写____。", a:"PVC；PS"},
+    {q:"影响高分子结晶能力的因素主要有分子链____、对称性、支链与取代基。", a:"规整性"},
+    {q:"高分子材料主要包括塑料、____、纤维、涂料和胶粘剂五大类。", a:"橡胶"},
+    {q:"共聚物按链节排列方式分为无规、交替、嵌段和____共聚物。", a:"接枝"}
+  ],
+  essay: [
+    {q:"简述高分子材料老化的概念、主要原因及常用防老化措施。", a:"老化：使用中受环境作用性能劣化。\n原因：光、热、氧、水、微生物。\n措施：添加抗氧剂、光稳定剂、物理防护等。"}
+  ]
+},
+"纳米材料": {
+  choice: [
+    {q:"纳米材料的三维尺度中，至少有一维尺寸在（  ）范围", o:["1–10 nm","1–100 nm","10–100 nm","0.1–1 nm"], a:1},
+    {q:"纳米材料中，一维纳米材料是", o:["纳米颗粒","纳米线、纳米管","纳米薄膜","纳米块体"], a:1},
+    {q:"纳米材料区别于常规材料最核心的效应是", o:["尺寸效应","小尺寸效应、表面效应、量子尺寸效应","宏观量子隧道效应","以上都是"], a:3},
+    {q:"随着纳米颗粒尺寸减小，比表面积的变化是", o:["减小","增大","不变","无规律"], a:1},
+    {q:"下列属于零维纳米材料的是", o:["碳纳米管","石墨烯","量子点","纳米带"], a:2},
+    {q:"量子尺寸效应会导致纳米材料", o:["能带变宽、出现离散能级","熔点升高","表面活性降低","导电性增强"], a:0},
+    {q:"碳纳米管的结构特点是", o:["二维片状结构","单层或多层卷曲石墨烯形成管状","球状颗粒","三维多孔结构"], a:1},
+    {q:"制备纳米材料的物理方法是", o:["溶胶-凝胶法","气相冷凝法","水热法","沉淀法"], a:1},
+    {q:"石墨烯属于（  ）纳米材料", o:["零维","一维","二维","三维"], a:2},
+    {q:"纳米材料表面原子占比大，不会带来的性质是", o:["催化活性高","吸附能力强","化学稳定性提高","熔点降低"], a:2}
+  ],
+  tf: [
+    {q:"纳米材料只要有一维在1–100 nm之间即可称为纳米材料。", a:true},
+    {q:"纳米颗粒尺寸越小，表面原子比例越高，表面活性越强。", a:true},
+    {q:"量子尺寸效应会使大块材料连续能带变为离散能级。", a:true},
+    {q:"石墨烯是由单层碳原子构成的二维蜂窝状结构。", a:true},
+    {q:"溶胶-凝胶法属于物理制备纳米材料的方法。", a:false},
+    {q:"碳纳米管导电性优异，可用于电子器件。", a:true},
+    {q:"纳米材料比表面积越大，吸附、催化性能越弱。", a:false},
+    {q:"小尺寸效应会使纳米金属的熔点显著降低。", a:true},
+    {q:"宏观量子隧道效应只在宏观材料中存在。", a:false},
+    {q:"纳米材料可应用于传感器、储能、抗菌材料等领域。", a:true}
+  ],
+  fill: [
+    {q:"纳米材料按空间维度分为____、一维、二维、三维纳米材料。", a:"零维"},
+    {q:"纳米材料四大基本效应：小尺寸效应、____、量子尺寸效应、____。", a:"表面效应；宏观量子隧道效应"},
+    {q:"零维纳米材料典型代表：纳米颗粒、____。", a:"量子点"},
+    {q:"二维纳米材料代表：石墨烯、____。", a:"二硫化钼（纳米片）"},
+    {q:"纳米材料制备方法分为____法和____法两大类。", a:"物理；化学"},
+    {q:"溶胶-凝胶法主要经历溶胶、____、干燥、____过程。", a:"凝胶；热处理/烧结"},
+    {q:"碳纳米管分为单壁碳纳米管和____碳纳米管。", a:"多壁"},
+    {q:"小尺寸效应会使纳米材料熔点____、磁性发生变化。", a:"降低"},
+    {q:"表面效应是指纳米颗粒尺寸减小，____急剧增大，表面原子占比增加。", a:"比表面积"},
+    {q:"宏观量子隧道效应体现纳米粒子具有____、磁通量等微观粒子的隧道贯穿能力。", a:"电子"},
+    {q:"水热法是在____密闭体系中，利用高温高压水溶液制备纳米材料。", a:"高压"},
+    {q:"纳米材料在催化、____、生物医药、能源存储领域应用广泛。", a:"传感器"},
+    {q:"三维纳米材料如纳米多孔材料、____等。", a:"纳米陶瓷"},
+    {q:"纳米材料团聚主要原因是____效应和范德华力作用。", a:"表面"}
+  ],
+  essay: [
+    {q:"什么是纳米材料？按维度分为哪几类？各举一例。", a:"纳米材料：至少一维尺寸在1–100 nm的材料。\n零维：量子点；一维：碳纳米管；二维：石墨烯；三维：纳米多孔材料。"},
+    {q:"简述纳米材料四大基本效应，并说明小尺寸效应对材料性能的影响。", a:"四大效应：小尺寸效应、表面效应、量子尺寸效应、宏观量子隧道效应。\n小尺寸效应：尺寸减小，熔点、磁性、光学、热学性能突变，金属纳米颗粒熔点大幅降低。"}
+  ]
+},
+"复合材料": {
+  choice: [
+    {q:"复合材料中起增强作用的相称为", o:["基体相","增强相","连续相","连续基体"], a:1},
+    {q:"按基体类型分类，不属于复合材料的是", o:["树脂基复合材料","金属基复合材料","陶瓷基复合材料","纳米单质材料"], a:3},
+    {q:"下列属于颗粒增强复合材料的是", o:["钢筋混凝土","碳纤维增强环氧树脂","氧化铝颗粒增强铝基材料","玻璃纤维布复合材料"], a:2},
+    {q:"复合材料中，基体的主要作用是", o:["承受主要载荷","粘结、固定增强体，传递应力、保护增强相","提高强度与硬度","提高弹性模量"], a:1},
+    {q:"纤维增强复合材料中，长纤维相比短纤维优势是", o:["成本更低","增强效果好、强度更高","成型更简单","易回收"], a:1},
+    {q:"玻璃纤维增强塑料（玻璃钢）属于", o:["金属基复合材料","树脂基复合材料","陶瓷基复合材料","水泥基复合材料"], a:1},
+    {q:"界面结合强度对复合材料性能影响很大，界面结合过强会导致", o:["易发生脆性断裂","载荷传递效率最高","韧性大幅提高","不易破坏"], a:0},
+    {q:"碳纤维复合材料最突出的性能是", o:["密度大、强度低","比强度高、耐高温、耐腐蚀","塑性好、易焊接","成本低廉"], a:1},
+    {q:"下列不属于复合材料增强体的是", o:["纤维","颗粒","晶须","纯铝基体"], a:3},
+    {q:"陶瓷基复合材料的主要目的是解决陶瓷材料的（  ）问题", o:["密度大","脆性大、易断裂","硬度低","熔点低"], a:1}
+  ],
+  tf: [
+    {q:"复合材料只是简单的物理混合，两相之间无界面相互作用。", a:false},
+    {q:"基体材料主要起粘结、传递应力、保护增强相的作用。", a:true},
+    {q:"碳纤维增强复合材料比强度高，广泛用于航空航天领域。", a:true},
+    {q:"玻璃纤维强度高、成本低，是应用最广的增强纤维。", a:true},
+    {q:"陶瓷基复合材料脆性更大，完全无法改善韧性。", a:false},
+    {q:"界面结合强度适中，复合材料综合力学性能最好。", a:true},
+    {q:"金属基复合材料耐热性、导热导电性优于树脂基复合材料。", a:true},
+    {q:"颗粒增强复合材料一般各向同性，性能均匀。", a:true},
+    {q:"复合材料不具有可设计性，性能不可调控。", a:false},
+    {q:"钢筋混凝土属于典型的纤维增强水泥基复合材料。", a:true}
+  ],
+  fill: [
+    {q:"复合材料由____相和____相两部分组成。", a:"基体；增强"},
+    {q:"按增强体形态分类，复合材料可分为____增强、颗粒增强、晶须增强复合材料。", a:"纤维"},
+    {q:"按基体材料不同，复合材料分为树脂基、____基、____基三大类。", a:"金属；陶瓷"},
+    {q:"玻璃钢是由____纤维与____基体复合而成。", a:"玻璃；树脂"},
+    {q:"复合材料界面的作用主要是传递____、阻隔载荷、改善结合性能。", a:"应力"},
+    {q:"增强纤维主要有玻璃纤维、____纤维、硼纤维、芳纶纤维等。", a:"碳"},
+    {q:"金属基复合材料常用基体有铝、镁、钛等____金属。", a:"轻"},
+    {q:"复合材料具有两大显著优点：高____强度、高比模量。", a:"比"},
+    {q:"短纤维复合材料相比长纤维，成型工艺____，但力学性能较差。", a:"简单"},
+    {q:"陶瓷基复合材料主要用于航空航天、高温耐磨领域，改善陶瓷的____。", a:"脆性"},
+    {q:"复合材料制备方法主要有手糊成型、____成型、热压成型、喷射成型等。", a:"模压"},
+    {q:"增强体在基体中分布分为连续分布和____分布。", a:"非连续"},
+    {q:"界面结合方式主要有机械结合、____结合、化学键结合。", a:"物理"},
+    {q:"复合材料性能具有可设计性，可根据需要选择基体和____进行搭配。", a:"增强体"}
+  ],
+  essay: [
+    {q:"简述复合材料的定义，并说明基体相与增强相各自的作用。", a:"复合材料：两种及以上不同性质材料，经复合工艺形成具有协同性能的多相材料。\n基体：粘结、保护增强相、传递应力。\n增强相：承受主要载荷，提高强度、硬度、模量等。"},
+    {q:"简述复合材料相比传统单一材料的主要优势。", a:"比强度、比模量高；耐腐蚀、耐高温、耐疲劳；性能可设计；轻量化；耐磨绝缘等综合性能优异。"}
+  ]
+},
+"金属材料": {
+  choice: [
+    {q:"金属材料最核心的特征性能是", o:["绝缘性好、质脆","良好的导电性、导热性、延展性、金属光泽","硬度极低、耐高温","化学性质绝对稳定"], a:1},
+    {q:"金属键的本质是", o:["共用电子对成键","阴阳离子静电作用","自由电子与金属阳离子的静电引力","分子间作用力"], a:2},
+    {q:"下列不属于黑色金属的是", o:["铁","钢","锰","铝"], a:3},
+    {q:"低碳钢、中碳钢、高碳钢的分类依据是", o:["合金元素含量","含碳量","硬度大小","熔点高低"], a:1},
+    {q:"不锈钢具有耐腐蚀性的主要原因是含有（  ）元素", o:["碳","铬、镍","硅","锰"], a:1},
+    {q:"常温下金属晶体最常见的三种结构不包括", o:["面心立方","体心立方","六方密排","简单四方"], a:3},
+    {q:"金属冷加工后，强度、硬度升高，塑性、韧性下降的现象称为", o:["退火","加工硬化","淬火","回火"], a:1},
+    {q:"下列有色金属中，密度最小、常用于轻量化工程的是", o:["铜","铝","镁","铅"], a:2},
+    {q:"淬火的主要目的是", o:["消除内应力、软化金属","快速冷却，大幅提高金属硬度和强度","细化晶粒、提升韧性","降低金属耐磨性"], a:1},
+    {q:"金属腐蚀中，危害最严重、速度最快的是", o:["化学腐蚀","电化学腐蚀","高温氧化腐蚀","干燥腐蚀"], a:1}
+  ],
+  tf: [
+    {q:"金属键无方向性和饱和性，是金属具备延展性的根本原因。", a:true},
+    {q:"含碳量越高，碳钢的硬度越高，塑性、韧性越好。", a:false},
+    {q:"不锈钢可以完全杜绝腐蚀，在任何环境中不生锈。", a:false},
+    {q:"所有金属在常温下均为固态。", a:false},
+    {q:"加工硬化可以提高金属材料的强度，是金属强化的重要手段。", a:true},
+    {q:"退火处理可以消除金属加工产生的内应力，软化材料。", a:true},
+    {q:"黑色金属就是颜色为黑色的金属，有色金属为彩色金属。", a:false},
+    {q:"电化学腐蚀必须同时具备电极、电解质溶液、回路三个条件。", a:true},
+    {q:"合金的熔点一般低于组成它的纯金属。", a:true},
+    {q:"铝的化学性质活泼，但表面易形成致密氧化膜，因此耐大气腐蚀。", a:true}
+  ],
+  fill: [
+    {q:"金属材料分为____金属和____金属两大类。", a:"黑色；有色"},
+    {q:"金属晶体的三种基本晶格结构：体心立方、____、____。", a:"面心立方；六方密排"},
+    {q:"金属依靠____键结合，因此具有良好的导电导热和延展性。", a:"金属"},
+    {q:"碳钢按含碳量可分为低碳钢、____、____。", a:"中碳钢；高碳钢"},
+    {q:"铁碳合金最常见的两种基本组织是____和____。", a:"铁素体；渗碳体"},
+    {q:"金属热处理四大基本工艺：淬火、回火、____、____。", a:"退火；正火"},
+    {q:"淬火后金属硬度极高但脆性大，需要通过____工艺降低脆性、调整性能。", a:"回火"},
+    {q:"铝合金最大的优点是____、强度较高、耐腐蚀、易加工。", a:"密度小（轻量化）"},
+    {q:"金属腐蚀主要分为____腐蚀和____腐蚀两类。", a:"化学；电化学"},
+    {q:"防止金属电化学腐蚀最常用的方法有涂覆保护层、____、____。", a:"牺牲阳极保护；外加电流保护"},
+    {q:"纯金属性能单一，工业上大多使用____，以此改善强度、硬度、耐蚀性。", a:"合金"},
+    {q:"铜及铜合金具有优异的____性，广泛用于电线电缆、导电元件。", a:"导电导热"}
+  ],
+  essay: [
+    {q:"简述化学腐蚀与电化学腐蚀的区别，并说明哪种腐蚀更严重、为什么。", a:"化学腐蚀：金属与介质直接发生纯化学反应，无电流产生，腐蚀速度慢、均匀。\n电化学腐蚀：形成原电池反应，有微电流产生。\n电化学腐蚀更严重：自然环境中水、氧气、杂质极易形成原电池，反应速率快、腐蚀不均匀，是工业设备、金属构件腐蚀的主要原因。"},
+    {q:"简述合金相较于纯金属的性能优势及工业应用意义。", a:"性能优势：\n（1）强度、硬度远高于纯金属；\n（2）熔点更低，便于熔炼和成型加工；\n（3）耐腐蚀性、耐磨性、耐热性大幅提升；\n（4）可根据需求设计性能，可塑性更强。\n工业意义：弥补纯金属性能单一、强度低、易腐蚀的缺陷，满足机械、建筑、航空、化工等各行各业的复杂使用需求。"}
+  ]
+}
+};
+
+let currentChapter = null;
+let currentMode = 'all';
+let questions = [];
+let currentIdx = 0;
+let answers = {};
+let score = {correct:0, wrong:0, total:0};
+
+function init() {
+  const nav = document.getElementById('chapterNav');
+  Object.keys(DATA).forEach((ch, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = ch;
+    btn.onclick = () => selectChapter(ch);
+    nav.appendChild(btn);
+  });
+}
+
+function selectChapter(ch) {
+  currentChapter = ch;
+  currentIdx = 0;
+  answers = {};
+  score = {correct:0, wrong:0, total:0};
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.textContent === ch));
+  document.getElementById('chapterTitle').textContent = ch;
+  loadQuestions();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  currentIdx = 0;
+  answers = {};
+  score = {correct:0, wrong:0, total:0};
+  document.querySelectorAll('.mode-bar button').forEach((b, i) => {
+    const modes = ['all','choice','tf','fill','essay'];
+    b.classList.toggle('active', modes[i] === mode);
+  });
+  if (currentChapter) loadQuestions();
+}
+
+function loadQuestions() {
+  const data = DATA[currentChapter];
+  questions = [];
+  const types = currentMode === 'all' ? ['choice','tf','fill','essay'] : [currentMode];
+  types.forEach(t => {
+    if (data[t]) {
+      data[t].forEach((q, i) => questions.push({...q, type: t, idx: i}));
+    }
+  });
+  if (questions.length === 0) {
+    document.getElementById('quizArea').innerHTML = '<div class="card"><p>该章节没有此类型的题目</p></div>';
+    return;
+  }
+  renderQuestion();
+}
+
+function getTypeLabel(type) {
+  return {choice:'选择题', tf:'判断题', fill:'填空题', essay:'简答题'}[type];
+}
+
+function renderQuestion() {
+  if (currentIdx >= questions.length) { showScore(); return; }
+  const q = questions[currentIdx];
+  const area = document.getElementById('quizArea');
+  const key = currentIdx;
+  const answered = answers[key] !== undefined;
+
+  let html = `<div class="card">`;
+  html += `<span class="q-tag">${getTypeLabel(q.type)} ${q.idx + 1}</span>`;
+  html += `<div class="q-text">${q.q}</div>`;
+
+  if (q.type === 'choice') {
+    const letters = ['A','B','C','D'];
+    html += `<div class="options">`;
+    q.o.forEach((opt, i) => {
+      let cls = 'opt';
+      if (answered) {
+        cls += ' disabled';
+        if (i === q.a) cls += ' correct';
+        else if (answers[key] === i && i !== q.a) cls += ' wrong';
+      }
+      html += `<div class="${cls}" onclick="answerChoice(${key},${i})"><span class="letter">${letters[i]}</span><span>${opt}</span></div>`;
+    });
+    html += `</div>`;
+  } else if (q.type === 'tf') {
+    html += `<div class="tf-opts">`;
+    let cT = 'tf-btn', cF = 'tf-btn';
+    if (answered) {
+      cT += ' disabled'; cF += ' disabled';
+      if (q.a === true) cT += ' correct'; else cT += (answers[key] === true ? ' wrong' : '');
+      if (q.a === false) cF += ' correct'; else cF += (answers[key] === false ? ' wrong' : '');
+    }
+    html += `<div class="${cT}" onclick="answerTF(${key},true)">✓ 正确</div>`;
+    html += `<div class="${cF}" onclick="answerTF(${key},false)">✗ 错误</div>`;
+    html += `</div>`;
+  } else if (q.type === 'fill' || q.type === 'essay') {
+    const revealed = answers[key] !== undefined;
+    html += `<button class="reveal-btn ${revealed?'hidden':''}" onclick="revealAnswer(${key})">点击查看答案</button>`;
+    html += `<div class="answer-box ${revealed?'show':''}">${q.a.replace(/\n/g,'<br>')}</div>`;
+    html += `<div class="self-grade ${revealed?'show':''}">`;
+    html += `<button class="yes" onclick="selfGrade(${key},true)">😊 记住了</button>`;
+    html += `<button class="no" onclick="selfGrade(${key},false)">😅 没记住</button>`;
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  area.innerHTML = html;
+  updateProgress();
+  updateNav();
+}
+
+function answerChoice(key, idx) {
+  if (answers[key] !== undefined) return;
+  answers[key] = idx;
+  const q = questions[key];
+  if (idx === q.a) score.correct++; else score.wrong++;
+  score.total++;
+  renderQuestion();
+}
+
+function answerTF(key, val) {
+  if (answers[key] !== undefined) return;
+  answers[key] = val;
+  const q = questions[key];
+  if (val === q.a) score.correct++; else score.wrong++;
+  score.total++;
+  renderQuestion();
+}
+
+function revealAnswer(key) {
+  answers[key] = 'revealed';
+  renderQuestion();
+}
+
+function selfGrade(key, correct) {
+  answers[key] = correct ? 'correct' : 'wrong';
+  if (correct) score.correct++; else score.wrong++;
+  score.total++;
+  setTimeout(() => go(1), 300);
+}
+
+function go(dir) {
+  currentIdx += dir;
+  if (currentIdx < 0) currentIdx = 0;
+  renderQuestion();
+}
+
+function updateProgress() {
+  const pct = questions.length > 0 ? ((currentIdx) / questions.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${currentIdx + 1} / ${questions.length}`;
+}
+
+function updateNav() {
+  document.getElementById('prevBtn').disabled = currentIdx <= 0;
+  document.getElementById('nextBtn').textContent = currentIdx >= questions.length - 1 ? '查看成绩' : '下一题';
+}
+
+function showScore() {
+  const pct = score.total > 0 ? Math.round(score.correct / score.total * 100) : 0;
+  let msg = '';
+  if (pct >= 90) msg = '太厉害了！这门稳了 💪';
+  else if (pct >= 70) msg = '不错，再刷一遍错题就完美了';
+  else if (pct >= 50) msg = '加油，重点看看错的那些';
+  else msg = '别灰心，多刷几遍就记住了';
+
+  let wrongHtml = '';
+  Object.keys(answers).forEach(k => {
+    const q = questions[k];
+    const a = answers[k];
+    let isWrong = false;
+    if (q.type === 'choice' && a !== q.a) isWrong = true;
+    if (q.type === 'tf' && a !== q.a) isWrong = true;
+    if (a === 'wrong') isWrong = true;
+    if (isWrong) {
+      const letters = ['A','B','C','D'];
+      let correctAns = '';
+      if (q.type === 'choice') correctAns = letters[q.a] + '. ' + q.o[q.a];
+      else if (q.type === 'tf') correctAns = q.a ? '正确 ✓' : '错误 ✗';
+      else correctAns = q.a;
+      wrongHtml += `<div class="wrong-item"><div class="wi-q">[${getTypeLabel(q.type)}] ${q.q}</div><div class="wi-a">✅ 正确答案：${correctAns}</div></div>`;
+    }
+  });
+
+  document.getElementById('quizArea').innerHTML = `
+    <div class="card score-card">
+      <div class="score-num">${pct}%</div>
+      <div class="score-label">正确 ${score.correct} / 总共 ${score.total}</div>
+      <div class="score-msg">${msg}</div>
+      <button class="restart-btn" onclick="selectChapter('${currentChapter}')">重新刷题</button>
+      ${wrongHtml ? `<div class="wrong-list"><h3 style="margin-bottom:10px;color:#c62828">❌ 错题回顾</h3>${wrongHtml}</div>` : ''}
+    </div>`;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = '已完成';
+}
+
+init();
+selectChapter(Object.keys(DATA)[0]);
+</script>
+</body>
+</html>
